@@ -31184,8 +31184,19 @@ const MAX_COMMENT_CHARS = 65536;
 
 async function main$1() {
 	const token = core$1.getInput("github-token");
+	const githubClient = new github_2(token);
 	const cloverFile = core$1.getInput("clover-file") || "./coverage/clover.xml";
 	const baseFile = core$1.getInput("clover-base");
+	const shouldFilterChangedFiles = core$1.getInput("filter-changed-files");
+	const shouldDeleteOldComments = core$1.getInput("delete-old-comments");
+	const title = core$1.getInput("title");
+	const maxUncoveredLines = core$1.getInput("max-uncovered-lines");
+	if (maxUncoveredLines && isNaN(parseInt(maxUncoveredLines))) {
+		console.log(
+			`Invalid parameter for max-uncovered-lines '${maxUncoveredLines}'. Must be an integer. Exiting...`,
+		);
+		return
+	}
 
 	const raw = await fs.promises.readFile(cloverFile, "utf-8").catch(err => null);
 	if (!raw) {
@@ -31202,20 +31213,34 @@ async function main$1() {
 	const options = {
 		repository: github_1.payload.repository.full_name,
 		commit: github_1.payload.pull_request.head.sha,
-		prefix: `${process.env.GITHUB_WORKSPACE}/`,
+		prefix: normalisePath(`${process.env.GITHUB_WORKSPACE}/`),
 		head: github_1.payload.pull_request.head.ref,
 		base: github_1.payload.pull_request.base.ref,
 	};
 
+	options.shouldFilterChangedFiles = shouldFilterChangedFiles;
+	options.title = title;
+	if (maxUncoveredLines) {
+		options.maxUncoveredLines = parseInt(maxUncoveredLines);
+	}
+
+	if (shouldFilterChangedFiles) {
+		options.changedFiles = await getChangedFiles(githubClient, options, github_1);
+	}
+
 	const clover = await parse$1(raw);
 	const baseclover = baseRaw && (await parse$1(baseRaw));
-	const body = diff(clover, baseclover, options);
+	const body = diff(clover, baseclover, options).substring(0, MAX_COMMENT_CHARS);
 
-	await new github_2(token).issues.createComment({
+	if (shouldDeleteOldComments) {
+		await deleteOldComments(githubClient, options, github_1);
+	}
+
+	await githubClient.issues.createComment({
 		repo: github_1.repo.repo,
 		owner: github_1.repo.owner,
 		issue_number: github_1.payload.pull_request.number,
-		body: diff(clover, baseclover, options),
+		body: body,
 	});
 }
 
