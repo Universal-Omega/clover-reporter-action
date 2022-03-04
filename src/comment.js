@@ -1,14 +1,26 @@
-import { details, summary, b, fragment, table, tbody, tr, th } from "./html"
+import { details, summary, b, fragment, table, tbody, tr, th, h2 } from "./html"
 
 import { percentage } from "./clover"
 import { tabulate } from "./tabulate"
 
 export function comment(clover, options) {
 	return fragment(
-		`Coverage after merging ${b(options.head)} into ${b(options.base)}`,
+		options.title ? h2(options.title) : "",
+		options.base
+			? `Coverage after merging ${b(options.head)} into ${b(
+					options.base,
+			  )} will be`
+			: `Coverage for this commit`,
 		table(tbody(tr(th(percentage(clover).toFixed(2), "%")))),
 		"\n\n",
-		details(summary("Coverage Report"), tabulate(clover, options)),
+		details(
+			summary(
+				options.shouldFilterChangedFiles
+					? "Coverage Report for Changed Files"
+					: "Coverage Report",
+			),
+			tabulate(clover, options),
+		),
 	)
 }
 
@@ -24,7 +36,12 @@ export function diff(clover, before, options) {
 	const arrow = pdiff === 0 ? "" : pdiff < 0 ? "▾" : "▴"
 
 	return fragment(
-		`Coverage after merging ${b(options.head)} into ${b(options.base)}`,
+		options.title ? h2(options.title) : "",
+		options.base
+			? `Coverage after merging ${b(options.head)} into ${b(
+					options.base,
+			  )} will be`
+			: `Coverage for this commit`,
 		table(
 			tbody(
 				tr(
@@ -34,6 +51,13 @@ export function diff(clover, before, options) {
 			),
 		),
 		"\n\n",
-		details(summary("Coverage Report"), tabulate(clover, options)),
+		details(
+			summary(
+				options.shouldFilterChangedFiles
+					? "Coverage Report for Changed Files"
+					: "Coverage Report",
+			),
+			tabulate(clover, options),
+		),
 	)
 }
