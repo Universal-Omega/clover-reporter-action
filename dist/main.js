@@ -23104,7 +23104,7 @@ const MAX_COMMENT_CHARS = 65536;
 async function main$1() {
 	const token = core$1.getInput("github-token");
 	const githubClient = new github_2(token);
-	const cloverFile = core$1.getInput("clover-file") || "./coverage/clover.info";
+	const cloverFile = core$1.getInput("clover-file") || "./coverage/clover.xml";
 	const baseFile = core$1.getInput("clover-base");
 	const shouldFilterChangedFiles = core$1.getInput("filter-changed-files");
 	const shouldDeleteOldComments = core$1.getInput("delete-old-comments");
