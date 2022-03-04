@@ -31021,13 +31021,34 @@ function uncovered(file, options) {
 
 	const all = [...branches, ...lines].sort();
 
-	return all
-		.map(function(line) {
+	var numNotIncluded = 0;
+	if (options.maxUncoveredLines) {
+		const notIncluded = all.splice(options.maxUncoveredLines);
+		numNotIncluded = notIncluded.length;
+	}
+
+	const result = all
+		.map(function(range) {
+			const fragment =
+				range.start === range.end
+					? `L${range.start}`
+					: `L${range.start}-L${range.end}`;
 			const relative = file.file.replace(options.prefix, "");
-			const href = `https://github.com/${options.repository}/blob/${options.commit}/${relative}#L${line}`;
-			return a({ href }, line)
+			const href = `https://github.com/${options.repository}/blob/${options.commit}/${relative}#${fragment}`;
+			const text =
+				range.start === range.end
+					? range.start
+					: `${range.start}&ndash;${range.end}`;
+
+			return a({ href }, text)
 		})
-		.join(", ")
+		.join(", ");
+
+	if (numNotIncluded > 0) {
+		return result + ` and ${numNotIncluded} more...`
+	} else {
+		return result
+	}
 }
 
 function comment(clover, options) {
@@ -31063,7 +31084,12 @@ function diff(clover, before, options) {
 	const arrow = pdiff === 0 ? "" : pdiff < 0 ? "▾" : "▴";
 
 	return fragment(
-		`Coverage after merging ${b(options.head)} into ${b(options.base)}`,
+		options.title ? h2(options.title) : "",
+		options.base
+			? `Coverage after merging ${b(options.head)} into ${b(
+					options.base,
+			  )} will be`
+			: `Coverage for this commit`,
 		table(
 			tbody(
 				tr(
@@ -31073,9 +31099,88 @@ function diff(clover, before, options) {
 			),
 		),
 		"\n\n",
-		details(summary("Coverage Report"), tabulate(clover, options)),
+		details(
+			summary(
+				options.shouldFilterChangedFiles
+					? "Coverage Report for Changed Files"
+					: "Coverage Report",
+			),
+			tabulate(clover, options),
+		),
 	)
 }
+
+// Get list of changed files
+async function getChangedFiles(githubClient, options, context) {
+	if (!options.commit || !options.baseCommit) {
+		core_7(
+			`The base and head commits are missing from the payload for this ${context.eventName} event.`,
+		);
+	}
+
+	// Use GitHub's compare two commits API.
+	// https://developer.github.com/v3/repos/commits/#compare-two-commits
+	const response = await githubClient.repos.compareCommits({
+		base: options.baseCommit,
+		head: options.commit,
+		owner: context.repo.owner,
+		repo: context.repo.repo,
+	});
+
+	if (response.status !== 200) {
+		core_7(
+			`The GitHub API for comparing the base and head commits for this ${context.eventName} event returned ${response.status}, expected 200.`,
+		);
+	}
+
+	return response.data.files
+		.filter(file => file.status == "modified" || file.status == "added")
+		.map(file => file.filename)
+}
+
+const REQUESTED_COMMENTS_PER_PAGE = 20;
+
+async function deleteOldComments(github, options, context) {
+	const existingComments = await getExistingComments(github, options, context);
+	for (const comment of existingComments) {
+		core_8(`Deleting comment: ${comment.id}`);
+		try {
+			await github.issues.deleteComment({
+				owner: context.repo.owner,
+				repo: context.repo.repo,
+				comment_id: comment.id,
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	}
+}
+
+async function getExistingComments(github, options, context) {
+	let page = 0;
+	let results = [];
+	let response;
+	do {
+		response = await github.issues.listComments({
+			issue_number: context.issue.number,
+			owner: context.repo.owner,
+			repo: context.repo.repo,
+			per_page: REQUESTED_COMMENTS_PER_PAGE,
+			page: page,
+		});
+		results = results.concat(response.data);
+		page++;
+	} while (response.data.length === REQUESTED_COMMENTS_PER_PAGE)
+
+	return results.filter(
+		comment =>
+			!!comment.user &&
+			(!options.title || comment.body.includes(options.title)) &&
+			comment.body.includes("Coverage Report"),
+	)
+}
+
+const MAX_COMMENT_CHARS = 65536;
 
 async function main$1() {
 	const token = core$1.getInput("github-token");
