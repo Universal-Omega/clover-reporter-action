@@ -8,12 +8,27 @@ inputs:
   github-token:
     description: Github token
     required: true
+    default: ${{ github.token }}
   clover-file:
-    description: The location of the clover.info file
+    description: The location of the clover.xml file
     required: false
   clover-base:
     description: The location of the clover file for the base branch
     required: false
+  filter-changed-files:
+    description: Set to true to only comment with coverage on files changed in this commit
+    required: false
+    default: false
+  delete-old-comments:
+    description: Set to true to delete old Coverage Report comments
+    required: false
+    default: false
+  title:
+    description: Title to add to the comment
+    required: false
+  max-uncovered-lines:
+    description: Max number of uncovered lines to display in uncovered lines column (integer)
+    required: false
 runs:
-  using: node12
+  using: node16
   main: dist/main.js
