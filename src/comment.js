@@ -26,6 +26,7 @@ export function comment(clover, options) {
 }
 
 export function diff(clover, before, options) {
+	options.shouldFilterChangedFiles = false;
 	if (!before) {
 		return comment(clover, options)
 	}
