@@ -30964,8 +30964,6 @@ function filterAndNormaliseClover(clover, options) {
 }
 
 function shouldBeIncluded(fileName, options) {
-
-console.log(options.shouldFilterChangedFiles);
 	if (!options.shouldFilterChangedFiles) {
 		return true
 	}
@@ -31081,7 +31079,6 @@ function ranges(linenos) {
 }
 
 function comment(clover, options) {
-console.log(options.shouldFilterChangedFiles);
 	return fragment(
 		options.title ? h2(options.title) : "",
 		options.base
@@ -31103,7 +31100,6 @@ console.log(options.shouldFilterChangedFiles);
 }
 
 function diff(clover, before, options) {
-console.log(options.shouldFilterChangedFiles);
 	if (!before) {
 		return comment(clover, options)
 	}
