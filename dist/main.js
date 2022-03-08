@@ -31019,7 +31019,7 @@ function uncovered(file, options) {
 		.filter(line => line.hit === 0)
 		.map(line => line.line);
 
-	const all = [...branches, ...lines].sort();
+	const all = ranges([...branches, ...lines]);
 
 	var numNotIncluded = 0;
 	if (options.maxUncoveredLines) {
@@ -31049,6 +31049,33 @@ function uncovered(file, options) {
 	} else {
 		return result
 	}
+}
+
+function ranges(linenos) {
+	const res = [];
+
+	let last = null;
+
+	linenos.sort().forEach(function(lineno) {
+		if (last === null) {
+			last = { start: lineno, end: lineno };
+			return
+		}
+
+		if (last.end + 1 === lineno) {
+			last.end = lineno;
+			return
+		}
+
+		res.push(last);
+		last = { start: lineno, end: lineno };
+	});
+
+	if (last) {
+		res.push(last);
+	}
+
+	return res
 }
 
 function comment(clover, options) {
