@@ -30975,12 +30975,31 @@ function toFolder(path) {
 		return ""
 	}
 
-	return tr(td({ colspan: 5 }, b(path)))
+	return tr(td({ colspan: 6 }, b(path)))
+}
+
+function getStatement(file) {
+	const { branches, functions, lines } = file;
+
+	return [branches, functions, lines].reduce(
+		function(acc, curr) {
+			if (!curr) {
+				return acc
+			}
+
+			return {
+				hit: acc.hit + curr.hit,
+				found: acc.found + curr.found,
+			}
+		},
+		{ hit: 0, found: 0 },
+	)
 }
 
 function toRow(file, indent, options) {
 	return tr(
 		td(filename(file, indent, options)),
+		td(percentage$1(getStatement(file))),
 		td(percentage$1(file.branches)),
 		td(percentage$1(file.functions)),
 		td(percentage$1(file.lines)),
