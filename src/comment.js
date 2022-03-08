@@ -4,7 +4,6 @@ import { percentage } from "./clover"
 import { tabulate } from "./tabulate"
 
 export function comment(clover, options) {
-	options.shouldFilterChangedFiles = false;
 	return fragment(
 		options.title ? h2(options.title) : "",
 		options.base
@@ -26,7 +25,6 @@ export function comment(clover, options) {
 }
 
 export function diff(clover, before, options) {
-	options.shouldFilterChangedFiles = false;
 	if (!before) {
 		return comment(clover, options)
 	}
