@@ -31287,6 +31287,7 @@ async function main$1() {
 	const baseclover = baseRaw && (await parse$1(baseRaw));
 	const body = diff(clover, baseclover, options).substring(0, MAX_COMMENT_CHARS);
 
+	console.log(shouldDeleteOldComments);
 	if (shouldDeleteOldComments) {
 		await deleteOldComments(githubClient, options, github_1);
 	}
