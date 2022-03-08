@@ -30926,6 +30926,7 @@ function normalisePath(file) {
 function tabulate(clover, options) {
 	const head = tr(
 		th("File"),
+		th("Stmts"),
 		th("Branches"),
 		th("Funcs"),
 		th("Lines"),
