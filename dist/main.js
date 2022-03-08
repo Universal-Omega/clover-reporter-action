@@ -31190,7 +31190,7 @@ const REQUESTED_COMMENTS_PER_PAGE = 20;
 async function deleteOldComments(github, options, context) {
 	const existingComments = await getExistingComments(github, options, context);
 	for (const comment of existingComments) {
-		core_8(`Deleting comment: ${comment.id}`);
+		core_10(`Deleting comment: ${comment.id}`);
 		try {
 			await github.issues.deleteComment({
 				owner: context.repo.owner,
