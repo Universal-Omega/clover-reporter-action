@@ -59,7 +59,6 @@ async function main() {
 	if (maxUncoveredLines) {
 		options.maxUncoveredLines = parseInt(maxUncoveredLines)
 	}
-console.log(options.shouldFilterChangedFiles);
 
 	if (shouldFilterChangedFiles) {
 		options.changedFiles = await getChangedFiles(githubClient, options, context)
