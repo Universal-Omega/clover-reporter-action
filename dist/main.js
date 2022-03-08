@@ -30964,6 +30964,8 @@ function filterAndNormaliseClover(clover, options) {
 }
 
 function shouldBeIncluded(fileName, options) {
+
+console.log(options.shouldFilterChangedFiles);
 	if (!options.shouldFilterChangedFiles) {
 		return true
 	}
@@ -31079,6 +31081,7 @@ function ranges(linenos) {
 }
 
 function comment(clover, options) {
+console.log(options.shouldFilterChangedFiles);
 	return fragment(
 		options.title ? h2(options.title) : "",
 		options.base
@@ -31100,6 +31103,7 @@ function comment(clover, options) {
 }
 
 function diff(clover, before, options) {
+console.log(options.shouldFilterChangedFiles);
 	if (!before) {
 		return comment(clover, options)
 	}
@@ -31258,8 +31262,6 @@ async function main$1() {
 	if (maxUncoveredLines) {
 		options.maxUncoveredLines = parseInt(maxUncoveredLines);
 	}
-
-console.log(options.shouldFilterChangedFiles);
 
 	if (shouldFilterChangedFiles) {
 		options.changedFiles = await getChangedFiles(githubClient, options, github_1);
