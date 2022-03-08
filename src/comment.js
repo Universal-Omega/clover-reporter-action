@@ -4,6 +4,7 @@ import { percentage } from "./clover"
 import { tabulate } from "./tabulate"
 
 export function comment(clover, options) {
+	options.shouldFilterChangedFiles = false;
 	return fragment(
 		options.title ? h2(options.title) : "",
 		options.base
