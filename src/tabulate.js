@@ -44,6 +44,7 @@ function filterAndNormaliseClover(clover, options) {
 }
 
 function shouldBeIncluded(fileName, options) {
+console.log(options.shouldFilterChangedFiles);
 	if (!options.shouldFilterChangedFiles) {
 		return true
 	}
